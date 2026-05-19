@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CQ · CrochetByQueen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* LIGHTBOX */
+.lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; }
+.lightbox.open { display:flex; }
+.lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:2px; }
+.lightbox-close { position:absolute; top:20px; right:28px; color:#fff; font-size:36px; cursor:pointer; line-height:1; background:none; border:none; }
+
+/* CUSTOMER GALLERY */
+.spotted-grid { columns: 3; gap: 12px; }
+.spotted-grid .spotted-item { break-inside: avoid; margin-bottom: 12px; overflow: hidden; cursor: pointer; position: relative; }
+.spotted-grid .spotted-item img { width:100%; display:block; transition: transform 0.4s ease; }
+.spotted-grid .spotted-item:hover img { transform: scale(1.04); }
+.spotted-grid .spotted-item::after { content:'🔍'; position:absolute; inset:0; background:rgba(61,35,20,0.4); display:flex; align-items:center; justify-content:center; font-size:28px; opacity:0; transition:opacity 0.3s; }
+.spotted-grid .spotted-item:hover::after { opacity:1; }
+
+/* PAYMENT POPUP */
+.payment-popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+.payment-popup.open { display:flex; }
+.payment-popup-inner { background: var(--bark); max-width:480px; width:100%; padding:40px 32px; position:relative; text-align:center; }
+.payment-popup-close { position:absolute; top:14px; right:18px; color:var(--sand); font-size:24px; cursor:pointer; background:none; border:none; }
+.payment-popup h3 { font-family:'Cormorant Garamond',serif; font-size:26px; color:var(--sand); margin-bottom:8px; }
+.payment-popup .production-notice { background: rgba(193,113,79,0.15); border: 1px solid var(--clay); border-radius:2px; padding:14px 18px; margin:20px 0; }
+.payment-popup .production-notice p { font-size:13px; color:var(--sand); line-height:1.7; }
+.payment-popup .production-notice strong { color:var(--clay); font-size:15px; }
+.whatsapp-cta { background:#25D366; color:#fff; padding:16px 28px; display:flex; align-items:center; justify-content:center; gap:12px; margin:20px 0 14px; text-decoration:none; font-size:15px; font-weight:500; letter-spacing:0.05em; transition:background 0.3s; border-radius:2px; }
+.whatsapp-cta:hover { background:#1DA851; }
+.whatsapp-cta svg { flex-shrink:0; }
+.payment-accounts { margin-top:20px; text-align:left; }
+.payment-accounts h4 { font-family:'Cormorant Garamond',serif; font-size:18px; color:var(--clay); margin-bottom:14px; text-align:center; }
+.payment-option { background:rgba(232,213,192,0.06); border:1px solid rgba(232,213,192,0.12); padding:14px 16px; margin-bottom:10px; }
+.payment-option p { font-size:12px; color:rgba(232,213,192,0.8); line-height:1.9; }
+.payment-option strong { color:var(--clay); }
+.payment-note-small { font-size:11px; color:rgba(232,213,192,0.45); margin-top:14px; font-style:italic; text-align:center; }
+
+@media (max-width:600px) {
+  .spotted-grid { columns: 2; }
+  .payment-popup-inner { padding:28px 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- PAYMENT POPUP -->
+<div class="payment-popup" id="paymentPopup">
+  <div class="payment-popup-inner">
+    <button class="payment-popup-close" onclick="closePaymentPopup()">✕</button>
+    <h3>✦ Request Received!</h3>
+    <p style="font-size:13px; color:rgba(232,213,192,0.6); margin-bottom:4px;">Thank you for your order request.</p>
+
+    <!-- PRODUCTION NOTICE -->
+    <div class="production-notice">
+      <p>⏳ <strong>Production Time: 14 Working Days</strong><br>
+      Please note that all pieces are handmade to order. Your item will be ready within <strong>14 working days</strong> from confirmation of payment.</p>
+    </div>
+
+    <!-- WHATSAPP CTA -->
+    <p style="font-size:12px; color:rgba(232,213,192,0.5); margin-bottom:8px;">After payment, send your receipt here:</p>
+    <a href="https://wa.me/2349085837971" target="_blank" class="whatsapp-cta">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      WhatsApp: 09085837971
+    </a>
+
+    <!-- BANK DETAILS -->
+    <div class="payment-accounts">
+      <h4>✦ Payment Details</h4>
+      <div class="payment-option">
+        <p><strong>Opay</strong><br>
+        Account Number: <strong>9085837971</strong><br>
+        Account Name: <strong>BABATUNDE QUEEN</strong></p>
+      </div>
+      <div class="payment-option">
+        <p><strong>United Bank of Africa (UBA)</strong><br>
+        Account Number: <strong>2174560197</strong><br>
+        Account Name: <strong>BABATUNDE QUEEN</strong></p>
+      </div>
+    </div>
+    <p class="payment-note-small">Send payment receipt to WhatsApp to confirm your order and begin production.</p>
+  </div>
+</div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<audio id="bgMusic" loop>
+  <source src="assets/music.mp3" type="audio/mpeg">
+</audio>
+<button class="music-btn" id="musicBtn" title="Toggle music">🔊</button>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo" onclick="showSection(null); return false;">
+    <span class="nav-logo-cq">CQ</span>
+    <span class="nav-logo-divider">·</span>
+    <span class="nav-logo-name">CrochetByQueen</span>
+  </a>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#mens" onclick="showSection('mens'); closeMenu(); return false;">Men's</a></li>
+    <li><a href="#spotted" onclick="showSection('spotted'); closeMenu(); return false;">Spotted in CQ</a></li>
+    <li><a href="#womens" onclick="showSection('womens'); closeMenu(); return false;">Women's</a></li>
+    <li><a href="#accessories" onclick="showSection('accessories'); closeMenu(); return false;">Accessories</a></li>
+    <li><a href="#classes" onclick="showSection('classes'); closeMenu(); return false;">Classes</a></li>
+    <li><a href="#contact" onclick="showSection('contact'); closeMenu(); return false;">Order</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <div class="hero-visual">
+    <img src="images/image_01.jpg" alt="CrochetByQueen — Creating Style Out Of Yarn">
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Handcrafted in Lagos, Nigeria 🇳🇬</p>
+    <h1 class="hero-headline">Custom crochet fits made with <em>creativity,</em> comfort &amp; style.</h1>
+    <p class="hero-tagline">"Creating Style Out Of Yarn..."</p>
+    <p class="hero-sub">Every piece is handmade with intention — custom sizing, your choice of colors, and designs that move with you. No two pieces are exactly alike.</p>
+    <div class="hero-ctas">
+      <a href="#mens" class="btn-primary" onclick="showSection('mens'); return false;">Shop Collection</a>
+      <a href="#contact" class="btn-ghost" onclick="showSection('contact'); return false;">Custom Order</a>
+    </div>
+    <div class="hero-badges">
+      <div class="badge"><span class="badge-num">100%</span><span class="badge-label">Handmade</span></div>
+      <div class="badge"><span class="badge-num">∞</span><span class="badge-label">Custom Colors</span></div>
+      <div class="badge"><span class="badge-num">Any</span><span class="badge-label">Size / Style</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES STRIP -->
+<div class="features-strip" id="featuresStrip" style="display:none">
+  <div class="feature-item"><span>✦</span> Fully Customizable</div>
+  <div class="feature-item"><span>✦</span> Handmade to Order</div>
+  <div class="feature-item"><span>✦</span> Any Color, Any Size</div>
+  <div class="feature-item"><span>✦</span> Lagos, Nigeria 🇳🇬</div>
+  <div class="feature-item"><span>✦</span> Unique Every Piece</div>
+</div>
+
+<!-- MEN'S COLLECTION -->
+<section class="section page-section" id="mens" style="display:none">
+  <div class="section-header reveal">
+    <div>
+      <h2 class="section-title">Men's <em>Collection</em></h2>
+      <p class="section-subtitle">Handcrafted shirts, polos & tops for him</p>
+    </div>
+    <a href="#contact" class="section-link" onclick="showSection('contact'); return false;">View all</a>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_02.png" alt="Cream & Navy Stripe Shirt" loading="lazy"></div><div class="gallery-info"><h4>Cream & Navy Stripe Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦60,000</span></div><span class="sold-badge">(2 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_03.png" alt="Blue & White Granny Cardigan" loading="lazy"></div><div class="gallery-info"><h4>Blue & White Granny Cardigan</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦65,000</span></div><span class="sold-badge">(4 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_04.png" alt="Black Polo Shirt" loading="lazy"><div class="sold-overlay">SOLD OUT</div></div><div class="gallery-info"><h4>Black Polo Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦50,000</span></div><span class="sold-badge sold-out">SOLD OUT</span><span class="btn-order disabled">Unavailable</span></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_05.png" alt="Mustard Wave Shirt" loading="lazy"></div><div class="gallery-info"><h4>Mustard Wave Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦65,000</span></div><span class="sold-badge">(3 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_06.png" alt="Camel & Brown Polo" loading="lazy"></div><div class="gallery-info"><h4>Camel & Brown Polo</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦60,000</span></div><span class="sold-badge">(5 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_07.png" alt="Black & White Granny Square Shirt" loading="lazy"><div class="sold-overlay">SOLD OUT</div></div><div class="gallery-info"><h4>Black & White Granny Square Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦65,000</span></div><span class="sold-badge sold-out">SOLD OUT</span><span class="btn-order disabled">Unavailable</span></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_08.png" alt="Black Floral Granny Top" loading="lazy"></div><div class="gallery-info"><h4>Black Floral Granny Top</h4><div class="gallery-meta"><span class="size-tag">Size: Large</span><span class="price-tag">₦50,000</span></div><span class="sold-badge">(2 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_09.png" alt="White & Red Floral Shirt" loading="lazy"></div><div class="gallery-info"><h4>White & Red Floral Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: Large</span><span class="price-tag">₦50,000</span></div><span class="sold-badge">(1 piece sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_10.png" alt="White & Black Granny Square Shirt" loading="lazy"></div><div class="gallery-info"><h4>White & Black Granny Square Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: Large</span><span class="price-tag">₦50,000</span></div><span class="sold-badge">(4 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_11.png" alt="Cream Stripe Open Cardigan" loading="lazy"></div><div class="gallery-info"><h4>Cream Stripe Open Cardigan</h4><div class="gallery-meta"><span class="size-tag">Size: XXL</span><span class="price-tag">₦75,000</span></div><span class="sold-badge">(3 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_12.png" alt="Olive Green Granny Shirt" loading="lazy"></div><div class="gallery-info"><h4>Olive Green Granny Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦55,000</span></div><span class="sold-badge">(5 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_13.png" alt="Olive & Cream Star Zip Top" loading="lazy"></div><div class="gallery-info"><h4>Olive & Cream Star Zip Top</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦60,000</span></div><span class="sold-badge">(2 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_14.png" alt="Brown Stripe Polo" loading="lazy"></div><div class="gallery-info"><h4>Brown Stripe Polo</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦65,000</span></div><span class="sold-badge">(3 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+    <div class="gallery-card"><div class="gallery-img-wrap"><img src="images/image_15.png" alt="Olive Stripe Button Shirt" loading="lazy"></div><div class="gallery-info"><h4>Olive Stripe Button Shirt</h4><div class="gallery-meta"><span class="size-tag">Size: XL</span><span class="price-tag">₦55,000</span></div><span class="sold-badge">(4 pieces sold)</span><a href="#contact" class="btn-order" onclick="showSection('contact'); return false;">Order Now</a></div></div>
+  </div>
+</section>
+
+<!-- SPOTTED IN CQ — CUSTOMER GALLERY -->
+<section class="section page-section" id="spotted" style="display:none">
+  <div class="section-header reveal">
+    <div>
+      <h2 class="section-title">Spotted in <em>CQ</em></h2>
+      <p class="section-subtitle">Real customers. Real style. All handmade. Click any photo to view.</p>
+    </div>
+    <a href="#contact" class="section-link" onclick="showSection('contact'); return false;">Order Yours →</a>
+  </div>
+  <div class="spotted-groups reveal">
+
+  <!-- Person 1 -->
+  <div class="spotted-group">
+    <div class="spotted-item" onclick="openLightbox('images/image_18.png')"><img src="images/image_18.png" loading="lazy"></div>
+    <div class="spotted-item" onclick="openLightbox('images/image_19.png')"><img src="images/image_19.png" loading="lazy"></div>
+  </div>
+
+  <!-- Person 2 -->
+  <div class="spotted-group">
+    <div class="spotted-item" onclick="openLightbox('images/image_20.png')"><img src="images/image_20.png" loading="lazy"></div>
+    <div class="spotted-item" onclick="openLightbox('images/image_21.png')"><img src="images/image_21.png" loading="lazy"></div>
+  </div>
+
+  <!-- Person 3 -->
+  <div class="spotted-group">
+    <div class="spotted-item" onclick="openLightbox('images/image_22.png')"><img src="images/image_22.png" loading="lazy"></div>
+    <div class="spotted-item" onclick="openLightbox('images/image_23.png')"><img src="images/image_23.png" loading="lazy"></div>
+  </div>
+
+  <!-- Person 4 - 3 photos -->
+  <div class="spotted-group spotted-group-3">
+    <div class="spotted-item" onclick="openLightbox('images/image_25.png')"><img src="images/image_25.png" loading="lazy"></div>
+    <div class="spotted-item" onclick="openLightbox('images/image_26.png')"><img src="images/image_26.png" loading="lazy"></div>
+    <div class="spotted-item" onclick="openLightbox('images/image_27.png')"><img src="images/image_27.png" loading="lazy"></div>
+  </div>
+
+  <!-- Person 5 - solo last -->
+  <div class="spotted-group spotted-group-single">
+    <div class="spotted-item" onclick="openLightbox('images/image_24.png')"><img src="images/image_24.png" loading="lazy"></div>
+  </div>
+
+</div>
+  <div style="text-align:center; margin-top:40px;">
+    <a href="#contact" class="btn-primary" onclick="showSection('contact'); return false;">Order Your Custom Piece</a>
+  </div>
+</section>
+
+<!-- WOMEN'S COLLECTION -->
+<section class="section section-alt page-section" id="womens" style="display:none">
+  <div class="section-header reveal">
+    <div>
+      <h2 class="section-title">Women's <em>Collection</em></h2>
+      <p class="section-subtitle">Gowns, beach wears & more — coming soon</p>
+    </div>
+    <a href="#contact" class="section-link" onclick="showSection('contact'); return false;">Custom Order →</a>
+  </div>
+  <div class="coming-grid reveal">
+    <div class="coming-card"><span class="coming-icon">👗</span><h4>Gowns</h4><p>Elegant handmade crochet gowns</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">🏖️</span><h4>Beach Wears</h4><p>Breezy crochet beach sets</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">👶</span><h4>Baby Boy Wears</h4><p>Adorable crochet fits for boys</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">🎀</span><h4>Baby Girl Wears</h4><p>Sweet crochet fits for girls</p><span class="coming-tag">Available to Order</span></div>
+  </div>
+  <p style="text-align:center; margin-top:32px; font-size:13px; font-weight:200; color:var(--warm-brown);">Photos coming soon · <a href="#contact" style="color:var(--clay);" onclick="showSection('contact'); return false;">Place a custom order today →</a></p>
+</section>
+
+<!-- ACCESSORIES -->
+<section class="section page-section" id="accessories" style="display:none">
+  <div class="section-header reveal">
+    <div>
+      <h2 class="section-title"><em>Accessories</em></h2>
+      <p class="section-subtitle">Hats, beanies, bonnets & scrunchies</p>
+    </div>
+    <a href="#contact" class="section-link" onclick="showSection('contact'); return false;">Custom Order →</a>
+  </div>
+  <div class="coming-grid reveal">
+    <div class="coming-card"><span class="coming-icon">🧢</span><h4>Hats</h4><p>Custom crochet hats for all</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">🧶</span><h4>Beanies</h4><p>Warm & stylish crochet beanies</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">🎀</span><h4>Bonnets</h4><p>Beautiful crochet bonnets</p><span class="coming-tag">Available to Order</span></div>
+    <div class="coming-card"><span class="coming-icon">💫</span><h4>Scrunchies</h4><p>Handmade crochet scrunchies</p><span class="coming-tag">Available to Order</span></div>
+  </div>
+  <p style="text-align:center; margin-top:32px; font-size:13px; font-weight:200; color:var(--warm-brown);">Photos coming soon · <a href="#contact" style="color:var(--clay);" onclick="showSection('contact'); return false;">Place a custom order today →</a></p>
+</section>
+
+<!-- CLASSES -->
+<section class="section section-alt page-section" id="classes" style="display:none">
+  <div class="section-header reveal">
+    <div>
+      <h2 class="section-title">Learn to <em>Crochet</em></h2>
+      <p class="section-subtitle">Online classes via WhatsApp Video Call · 12noon–6pm</p>
+    </div>
+  </div>
+  <div class="classes-grid reveal">
+    <div class="class-card">
+      <div class="class-card-img"><img src="images/image_16.png" alt="CrochetByQueen Logo"></div>
+      <div class="class-card-body">
+        <h3>2 Weeks Crochet Class</h3>
+        <p class="class-duration">2 Weeks · Online · WhatsApp Video</p>
+        <p>A focused 2-week intensive to get you started on your crochet journey from scratch.</p>
+        <span class="class-price">₦25,000</span>
+        <a href="#contact" class="btn-enroll" onclick="showSection('contact'); return false;">Enroll Now</a>
+      </div>
+    </div>
+    <div class="class-card">
+      <div class="class-card-img"><img src="images/image_17.png" alt="CrochetByQueen Logo"></div>
+      <div class="class-card-body">
+        <h3>1 Month Crochet Class</h3>
+        <p class="class-duration">1 Month · Online · WhatsApp Video</p>
+        <p>A full month of guided learning — patterns, sizing, techniques and building your own pieces.</p>
+        <span class="class-price">₦50,000</span>
+        <a href="#contact" class="btn-enroll" onclick="showSection('contact'); return false;">Enroll Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT / ORDER -->
+<section class="contact-section page-section" id="contact" style="display:none">
+  <div class="contact-left reveal">
+    <h2>Order a <em>Custom</em> Piece</h2>
+    <p>Tell me your vision — your size, your colors, your style. Fill in the form and payment details will appear after submission.</p>
+    <div class="contact-links">
+      <a href="https://www.instagram.com/crochetbyqueen01" target="_blank" class="contact-link">
+        <div class="contact-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="#E1306C"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+        <span>@crochetbyqueen01</span>
+      </a>
+      <a href="https://wa.me/2349085837971" target="_blank" class="contact-link">
+        <div class="contact-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+        <span>09085837971 (WhatsApp)</span>
+      </a>
+      <a href="https://www.tiktok.com/@crochetbyqueen1" target="_blank" class="contact-link">
+        <div class="contact-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/></svg></div>
+        <span>@crochetbyqueen1 on TikTok</span>
+      </a>
+      <div class="contact-link">
+        <div class="contact-link-icon">📍</div>
+        <span>Lagos, Nigeria 🇳🇬</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-form reveal reveal-delay-2">
+    <div class="form-row">
+      <div class="form-group"><label>Your Name</label><input type="text" id="fname" placeholder="Full name"></div>
+      <div class="form-group"><label>WhatsApp / Phone</label><input type="text" id="fphone" placeholder="+234..."></div>
+    </div>
+    <div class="form-group">
+      <label>What would you like?</label>
+      <select id="ftype">
+        <option value="">Select a piece type</option>
+        <option>Men's Shirt / Top</option>
+        <option>Gown</option>
+        <option>Beach Wear</option>
+        <option>Baby Boy Wear</option>
+        <option>Baby Girl Wear</option>
+        <option>Hat / Beanie</option>
+        <option>Bonnet</option>
+        <option>Scrunchie</option>
+        <option>Other / Not sure</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Preferred Color(s)</label><input type="text" id="fcolor" placeholder="e.g. teal, blush, nude"></div>
+      <div class="form-group"><label>Your Size</label><input type="text" id="fsize" placeholder="S / M / L or measurements"></div>
+    </div>
+    <div class="form-group">
+      <label>Additional Details / Inspiration</label>
+      <textarea id="fnotes" placeholder="Describe your dream piece, occasion, inspo, etc."></textarea>
+    </div>
+    <button class="btn-submit" type="button" id="submitBtn">Send Request ✦</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="siteFooter">
+  <a href="#" class="footer-logo" onclick="showSection(null); return false;">
+    <span class="footer-logo-cq">CQ</span>
+    <span class="footer-logo-divider">·</span>
+    <span class="footer-logo-name">CrochetByQueen</span>
+  </a>
+  <p>© 2026 CrochetByQueen · Handmade with love in Lagos, Nigeria 🇳🇬</p>
+  <div class="footer-socials">
+    <a href="https://www.instagram.com/crochetbyqueen01" target="_blank">Instagram</a>
+    <a href="https://www.tiktok.com/@crochetbyqueen1" target="_blank">TikTok</a>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+<script>
+var sections = ['mens','spotted','womens','accessories','classes','contact'];
+
+function showSection(id) {
+  sections.forEach(function(s) {
+    var el = document.getElementById(s);
+    if (el) el.style.display = 'none';
+  });
+  var strip = document.getElementById('featuresStrip');
+  var hero = document.getElementById('heroSection');
+  if (!id) {
+    if (hero) hero.style.display = '';
+    if (strip) strip.style.display = 'none';
+    window.scrollTo(0, 0);
+    document.querySelectorAll('.nav-links a').forEach(function(a){ a.classList.remove('active'); });
+    return;
+  }
+  if (hero) hero.style.display = 'none';
+  var el = document.getElementById(id);
+  if (el) { el.style.display = 'block'; if (strip) strip.style.display = 'flex'; window.scrollTo(0, 0); }
+  document.querySelectorAll('.nav-links a').forEach(function(a){ a.classList.remove('active'); });
+  var activeLink = document.querySelector('.nav-links a[href="#' + id + '"]');
+  if (activeLink) activeLink.classList.add('active');
+  setTimeout(function(){ document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('visible'); }); }, 100);
+}
+
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+
+function closeMenu() {
+  document.getElementById('navLinks').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+// Lightbox
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Payment popup
+document.getElementById('submitBtn').addEventListener('click', function() {
+  var name = document.getElementById('fname').value.trim();
+  var phone = document.getElementById('fphone').value.trim();
+  var type = document.getElementById('ftype').value;
+  if (!name || !phone || !type) {
+    alert('Please fill in your name, phone number and piece type to continue.');
+    return;
+  }
+  document.getElementById('paymentPopup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+
+function closePaymentPopup() {
+  document.getElementById('paymentPopup').classList.remove('open');
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>
